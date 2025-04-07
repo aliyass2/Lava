@@ -2,8 +2,7 @@
 import controler from './../../public/temp/controler.webp';
 import fifa from './../../public/temp/fifa.jpg';
 import guy from './../../public/temp/guy.webp';
-import ImageCarousel from './images-components/ImageCarousel.jsx';
-
+import ImageCarousel from './../components/images-components/ImageCarousel.jsx';
 export default function HeaderSection() {
   // Define images data with Arabic titles and descriptions
   const carouselImages = [
