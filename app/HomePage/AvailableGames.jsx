@@ -1,7 +1,6 @@
 // app/components/AvailableGames.jsx
 import Link from 'next/link';
-import InfiniteImageSlider from './images-components/InfiniteImageSlider.jsx';
-
+import InfiniteImageSlider from './../components/images-components/InfiniteImageSlider.jsx';
 export const metadata = {
   title: 'الألعاب المتوفرة | منصة الألعاب الخاصة بك',
   description: 'تصفح مجموعتنا من الألعاب الشعبية والعصرية مع مجتمعات نشطة. اكتشف أفضل الألعاب للعب الآن.',
@@ -70,6 +69,7 @@ export default async function AvailableGames() {
     <section 
       className="relative py-8 px-4 bg-black text-white" 
       aria-labelledby="available-games-heading"
+      dir='rtl'
     >
       {/* Red linear gradient overlay from right to left */}
       <div className="absolute inset-0 bg-gradient-to-l from-red-950 to-50% pointer-events-none"></div>

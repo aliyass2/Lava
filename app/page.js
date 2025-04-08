@@ -1,8 +1,9 @@
 // app/page.jsx
-import HeaderSection from './components/HeaderSection';
-import AvailableGames from './components/AvailableGames';
-import AboutUs from './components/AboutUs';
-import Gallery from './components/gallery';
+import HeaderSection from './HomePage/HeaderSection.jsx';
+
+import AvailableGames from './HomePage/AvailableGames.jsx';
+import AboutUs from './HomePage/AboutUs.jsx';
+import News from './HomePage/News';
 
 export const metadata = {
   title: 'منصة الألعاب - الرئيسية',
@@ -15,8 +16,9 @@ export default function Home() {
     <>
       <HeaderSection />
       <AvailableGames />
+      <News/>
       <AboutUs/>
-      <Gallery/>
+      
     </>
   );
 }
