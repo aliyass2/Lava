@@ -33,13 +33,16 @@ model Tournament {
 }
 
 model Game {
-  id          String     @id @default(auto()) @map("_id") @db.ObjectId
-  title       String
-  description String
-  image       Bytes
-  platforms   Platform[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  title            String
+  description      String
+  extraDescription String?   // Optional field for additional description
+  gameSpecs        Json?     // Use JSON to store unstructured game specs
+  trailerUrl       String?   // URL for YouTube trailer
+  image            Bytes
+  platforms        Platform[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model Gallery {
