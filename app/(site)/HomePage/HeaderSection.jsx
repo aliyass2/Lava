@@ -1,8 +1,8 @@
 // app/components/HeaderSection.jsx
-import controler from './../../public/temp/controler.webp';
-import fifa from './../../public/temp/fifa.jpg';
-import guy from './../../public/temp/guy.webp';
 import ImageCarousel from './../components/images-components/ImageCarousel.jsx';
+import controler from './../../../public/temp/controler.webp';
+import fifa from './../../../public/temp/fifa.jpg';
+import guy from './../../../public/temp/guy.webp';
 export default function HeaderSection() {
   // Define images data with Arabic titles and descriptions
   const carouselImages = [
