@@ -1,9 +1,8 @@
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FaFacebook, FaTwitter, FaInstagram, FaDiscord, FaTiktok, FaYoutube } from 'react-icons/fa';
-import Lava from './../../public/Lava.png';
-
+import { FaFacebook, FaTwitter, FaInstagram } from 'react-icons/fa';
+import Lava from './../../../public/Lava.png';
 export default function Footer() {
   return (
     <footer className="text-gray-300" dir="rtl">
@@ -111,27 +110,7 @@ export default function Footer() {
               </div>
             </div>
 
-            {/* Newsletter */}
-            <div>
-              <h3 className="text-white text-lg font-bold mb-4">النشرة الإخبارية</h3>
-              <p className="text-gray-400 mb-4">اشترك في نشرتنا البريدية للحصول على آخر العروض والفعاليات والبطولات.</p>
-              <form className="space-y-2">
-                <div>
-                  <input
-                    type="email"
-                    placeholder="البريد الإلكتروني"
-                    className="w-full px-4 py-2 bg-gray-800 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-                    required
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-md transition-colors"
-                >
-                  اشتراك
-                </button>
-              </form>
-            </div>
+         
           </div>
         </div>
       </div>
