@@ -16,25 +16,28 @@ export const getNewsById = async (id: string) => {
 export const createNews = async (data: CreateNewsDto) => {
   return await prisma.news.create({
     data: {
+      slug: data.slug,
       title: data.title,
       description: data.description,
+      category: data.category,
       date: new Date(data.date),
-      image: Buffer.from(data.image, 'base64'),
+      image: data.image,        // Store the image URL (or path) directly
+      content: data.content,
     },
   });
 };
 
 export const updateNews = async (id: string, data: UpdateNewsDto) => {
-  const updateData: any = { ...data };
-
-  if (data.date) {
-    updateData.date = new Date(data.date);
-  }
-
-  if (data.image) {
-    updateData.image = Buffer.from(data.image, 'base64');
-  }
-
+  // Build the update object conditionally:
+  const updateData: any = {};
+  if (data.slug !== undefined) updateData.slug = data.slug;
+  if (data.title !== undefined) updateData.title = data.title;
+  if (data.description !== undefined) updateData.description = data.description;
+  if (data.category !== undefined) updateData.category = data.category;
+  if (data.date !== undefined) updateData.date = new Date(data.date);
+  if (data.image !== undefined) updateData.image = data.image;
+  if (data.content !== undefined) updateData.content = data.content;
+  
   return await prisma.news.update({
     where: { id },
     data: updateData,

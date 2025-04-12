@@ -33,16 +33,21 @@ model Tournament {
 }
 
 model Game {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
-  title            String
-  description      String
-  extraDescription String?   // Optional field for additional description
-  gameSpecs        Json?     // Use JSON to store unstructured game specs
-  trailerUrl       String?   // URL for YouTube trailer
-  image            Bytes
-  platforms        Platform[]
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id              String     @id @default(auto()) @map("_id") @db.ObjectId
+  title           String
+  category        String
+  description     String
+  longDescription String
+  features        String[]   // e.g. ["feature1", "feature2"]
+  requirements    Json?      // an object like { processor: "...", ram: "...", graphics: "...", storage: "..." }
+  screenshots     String[]   // Array of URL strings for screenshots
+  videoUrl        String?    // URL for the trailer (embed)
+  slug            String
+  popular         Boolean
+  image           Bytes      // Primary image (stored as binary data)
+  platforms       Platform[] // Using your enum
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 }
 
 model Gallery {
@@ -56,13 +61,17 @@ model Gallery {
 
 model News {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  slug        String   @unique
   title       String
   description String
+  category    String
   date        DateTime
-  image       Bytes
+  image       String   // Storing image URL instead of binary data
+  content     String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
 model Price {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   productName  String
