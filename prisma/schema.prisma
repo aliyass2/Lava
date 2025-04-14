@@ -27,7 +27,7 @@ model Tournament {
   startDate   DateTime
   endDate     DateTime
   prize       String
-  image       Bytes
+  image       String   // Changed from Bytes to String for Cloudinary URL
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -38,23 +38,19 @@ model Game {
   category        String
   description     String
   longDescription String
-  features        String[]   // e.g. ["feature1", "feature2"]
-  requirements    Json?      // an object like { processor: "...", ram: "...", graphics: "...", storage: "..." }
-  screenshots     String[]   // Array of URL strings for screenshots
   videoUrl        String?    // URL for the trailer (embed)
-  slug            String
   popular         Boolean
-  image           Bytes      // Primary image (stored as binary data)
-  platforms       Platform[] // Using your enum
+  image           String     // Changed from Bytes to String
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 }
+
 
 model Gallery {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   title       String
   description String
-  image       Bytes
+  image       String     // Changed from Bytes to String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -66,7 +62,7 @@ model News {
   description String
   category    String
   date        DateTime
-  image       String   // Storing image URL instead of binary data
+  image       String   // storing image URL instead of binary data
   content     String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -79,7 +75,7 @@ model Price {
   price        Float
   discountRate Float?   // Discount percentage (e.g., 30 for 30%)
   finalPrice   Float?   // The discounted price (if applicable)
-  image        Bytes
+  image        String   // Changed from Bytes to String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }

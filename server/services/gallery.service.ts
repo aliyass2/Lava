@@ -1,6 +1,5 @@
-// server/services/gallery.service.ts
 import { prisma } from '@/lib/prisma/client';
-import { Prisma } from '@prisma/client'; // Import Prisma for the update input type
+import { Prisma } from '@prisma/client';
 import { CreateGalleryDto, UpdateGalleryDto } from '../dtos/gallery.dto';
 
 export const getAllGalleries = async () => {
@@ -18,14 +17,12 @@ export const createGallery = async (data: CreateGalleryDto) => {
     data: {
       title: data.title,
       description: data.description,
-      // Convert base64 string to Buffer
-      image: Buffer.from(data.image, 'base64'),
+      image: data.image, // Cloudinary URL string for the image.
     },
   });
 };
 
 export const updateGallery = async (id: string, data: UpdateGalleryDto) => {
-  // Construct an updateData object of type Prisma.GalleryUpdateInput
   let updateData: Prisma.GalleryUpdateInput = {};
 
   if (data.title !== undefined) {
@@ -34,9 +31,8 @@ export const updateGallery = async (id: string, data: UpdateGalleryDto) => {
   if (data.description !== undefined) {
     updateData.description = data.description;
   }
-  // Convert the image string to a Buffer if provided
   if (data.image !== undefined) {
-    updateData.image = Buffer.from(data.image, 'base64');
+    updateData.image = data.image;
   }
 
   return await prisma.gallery.update({

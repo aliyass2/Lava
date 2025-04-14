@@ -21,14 +21,13 @@ export const createNews = async (data: CreateNewsDto) => {
       description: data.description,
       category: data.category,
       date: new Date(data.date),
-      image: data.image,        // Store the image URL (or path) directly
+      image: data.image,        // Expect a URL
       content: data.content,
     },
   });
 };
 
 export const updateNews = async (id: string, data: UpdateNewsDto) => {
-  // Build the update object conditionally:
   const updateData: any = {};
   if (data.slug !== undefined) updateData.slug = data.slug;
   if (data.title !== undefined) updateData.title = data.title;
