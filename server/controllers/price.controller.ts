@@ -11,9 +11,18 @@ import { CreatePriceDto, UpdatePriceDto } from '../dtos/price.dto';
 import { Readable } from 'stream';
 import { v2 as cloudinary } from 'cloudinary';
 
-/**
- * Returns all prices as JSON.
- */
+/** Helper: upload a File to Cloudinary */
+function uploadFileToCloudinary(file: File): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { folder: 'prices' },
+      (error, result) => error ? reject(error) : resolve(result)
+    );
+    const nodeStream = Readable.fromWeb(file.stream() as any) as unknown as NodeJS.ReadableStream;
+    nodeStream.pipe(uploadStream).on('error', reject);
+  });
+}
+
 export async function handleGetAllPrices() {
   try {
     const prices = await getAllPrices();
@@ -21,168 +30,131 @@ export async function handleGetAllPrices() {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
-  } catch (error: any) {
-    console.error("Error fetching prices:", error);
-    return new Response(JSON.stringify({ error: 'Failed to fetch prices' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+  } catch (err: any) {
+    console.error("Error fetching prices:", err);
+    return new Response(JSON.stringify({ error: 'Failed to fetch prices' }), { status: 500 });
   }
 }
 
-/**
- * Returns a single price record by ID.
- */
 export async function handleGetPriceById(id: string) {
   try {
     const price = await getPriceById(id);
-    if (!price)
-      return new Response(JSON.stringify({ error: 'Price not found' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    return new Response(JSON.stringify(price), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  } catch (error: any) {
-    console.error("Error fetching price:", error);
-    return new Response(JSON.stringify({ error: 'Failed to fetch price' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    if (!price) {
+      return new Response(JSON.stringify({ error: 'Price not found' }), { status: 404 });
+    }
+    return new Response(JSON.stringify(price), { status: 200 });
+  } catch (err: any) {
+    console.error("Error fetching price:", err);
+    return new Response(JSON.stringify({ error: 'Failed to fetch price' }), { status: 500 });
   }
 }
 
-/**
- * Helper: Upload a file from form-data to Cloudinary using a stream.
- */
-function uploadFileToCloudinary(file: File): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      { folder: 'prices' }, // Save in a dedicated folder if you like.
-      (error, result) => {
-        if (error) return reject(error);
-        resolve(result);
-      }
-    );
-    // Convert the Web API File stream into a Node.js Readable stream.
-    const nodeStream = Readable.fromWeb(file.stream() as any) as unknown as NodeJS.ReadableStream;
-    nodeStream.pipe(uploadStream).on('error', (err) => {
-      reject(err);
-    });
-  });
-}
-
-/**
- * Create Price handler that expects form-data.
- * Keys: productName, time, price, discountRate, finalPrice (optional) and image (as File).
- */
 export async function handleCreatePrice(req: Request) {
   try {
     const formData = await req.formData();
     const productName = formData.get("productName")?.toString() || "";
+    const mostused = formData.get("mostused")?.toString() === "true";
+    // parse features (either multiple fields or a JSON array)
+    const rawFeatures = formData.getAll("features");
+    let features: string[] = [];
+    rawFeatures.forEach(item => {
+      if (typeof item === "string") {
+        try {
+          const parsed = JSON.parse(item);
+          if (Array.isArray(parsed)) features.push(...parsed);
+          else features.push(item);
+        } catch {
+          features.push(item);
+        }
+      }
+    });
+
     const time = Number(formData.get("time"));
     const price = Number(formData.get("price"));
-    const discountRate = formData.get("discountRate")
-      ? Number(formData.get("discountRate"))
-      : undefined;
-    const finalPrice = formData.get("finalPrice")
-      ? Number(formData.get("finalPrice"))
-      : undefined;
-    
-    let imageUrl = "";
+    const discountRate = formData.get("discountRate") ? Number(formData.get("discountRate")) : undefined;
+    const finalPrice = formData.get("finalPrice") ? Number(formData.get("finalPrice")) : undefined;
+
     const imageField = formData.get("image");
     if (!(imageField instanceof File)) {
-      return new Response(JSON.stringify({ error: 'Image must be a valid file' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return new Response(JSON.stringify({ error: 'Image must be a File' }), { status: 400 });
     }
     const uploadResult = await uploadFileToCloudinary(imageField);
-    imageUrl = uploadResult.secure_url;
+    const imageUrl = uploadResult.secure_url;
 
-    const data: CreatePriceDto = {
+    const dto: CreatePriceDto = {
       productName,
+      mostused,
+      features,
       time,
       price,
       discountRate,
       finalPrice,
-      image: imageUrl, // Now a Cloudinary URL
+      image: imageUrl,
     };
 
-    const newPrice = await createPrice(data);
-    return new Response(JSON.stringify(newPrice), {
-      status: 201,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  } catch (error: any) {
-    console.error("Error creating price:", error);
-    return new Response(JSON.stringify({ error: error.message || 'Failed to create price' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const newPrice = await createPrice(dto);
+    return new Response(JSON.stringify(newPrice), { status: 201 });
+  } catch (err: any) {
+    console.error("Error creating price:", err);
+    return new Response(JSON.stringify({ error: err.message || 'Failed to create price' }), { status: 500 });
   }
 }
 
-/**
- * Update Price handler that expects form-data.
- * Only provided fields will be updated.
- */
 export async function handleUpdatePrice(req: Request, id: string) {
   try {
     const formData = await req.formData();
-    const productName = formData.get("productName")?.toString();
-    const time = formData.get("time") ? Number(formData.get("time")) : undefined;
-    const price = formData.get("price") ? Number(formData.get("price")) : undefined;
-    const discountRate = formData.get("discountRate") ? Number(formData.get("discountRate")) : undefined;
-    const finalPrice = formData.get("finalPrice") ? Number(formData.get("finalPrice")) : undefined;
+    const dto: UpdatePriceDto = {};
 
-    let image: string | undefined = undefined;
-    const imageField = formData.get("image");
-    if (imageField) {
+    if (formData.has("productName")) dto.productName = formData.get("productName")!.toString();
+    if (formData.has("mostused")) dto.mostused = formData.get("mostused")!.toString() === "true";
+
+    // features
+    if (formData.has("features")) {
+      const rawFeatures = formData.getAll("features") as (string | File)[];
+      const features: string[] = [];
+      rawFeatures.forEach(item => {
+        if (typeof item === "string") {
+          try {
+            const parsed = JSON.parse(item);
+            if (Array.isArray(parsed)) features.push(...parsed);
+            else features.push(item);
+          } catch {
+            features.push(item);
+          }
+        }
+      });
+      dto.features = features;
+    }
+
+    if (formData.has("time")) dto.time = Number(formData.get("time"));
+    if (formData.has("price")) dto.price = Number(formData.get("price"));
+    if (formData.has("discountRate")) dto.discountRate = Number(formData.get("discountRate"));
+    if (formData.has("finalPrice")) dto.finalPrice = Number(formData.get("finalPrice"));
+
+    if (formData.has("image")) {
+      const imageField = formData.get("image");
       if (imageField instanceof File) {
         const uploadResult = await uploadFileToCloudinary(imageField);
-        image = uploadResult.secure_url;
-      } else if (typeof imageField === 'string') {
-        image = imageField;
+        dto.image = uploadResult.secure_url;
+      } else {
+        dto.image = imageField!.toString();
       }
     }
 
-    const updateData: UpdatePriceDto = {};
-    if (productName) updateData.productName = productName;
-    if (time !== undefined) updateData.time = time;
-    if (price !== undefined) updateData.price = price;
-    if (discountRate !== undefined) updateData.discountRate = discountRate;
-    if (finalPrice !== undefined) updateData.finalPrice = finalPrice;
-    if (image) updateData.image = image;
-
-    const updatedPrice = await updatePrice(id, updateData);
-    return new Response(JSON.stringify(updatedPrice), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  } catch (error: any) {
-    console.error("Error updating price:", error);
-    return new Response(JSON.stringify({ error: error.message || 'Failed to update price' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const updated = await updatePrice(id, dto);
+    return new Response(JSON.stringify(updated), { status: 200 });
+  } catch (err: any) {
+    console.error("Error updating price:", err);
+    return new Response(JSON.stringify({ error: err.message || 'Failed to update price' }), { status: 500 });
   }
 }
 
-/**
- * Delete Price handler.
- */
 export async function handleDeletePrice(id: string) {
   try {
     await deletePrice(id);
     return new Response(null, { status: 204 });
-  } catch (error: any) {
-    console.error("Error deleting price:", error);
-    return new Response(JSON.stringify({ error: 'Failed to delete price' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+  } catch (err: any) {
+    console.error("Error deleting price:", err);
+    return new Response(JSON.stringify({ error: 'Failed to delete price' }), { status: 500 });
   }
 }

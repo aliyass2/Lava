@@ -40,9 +40,13 @@ export const handleDeleteAdmin = async (id: string) => {
 export const handleLoginAdmin = async (req: Request) => {
   try {
     const { username, password } = await req.json();
-    const token = await loginAdmin(username, password);
-    return new Response(JSON.stringify({ token }), { status: 200 });
-  } catch (error: any) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 401 });
+    const { token, admin } = await loginAdmin(username, password);
+
+    return new Response(JSON.stringify({ token, admin }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (err: any) {
+    return new Response(JSON.stringify({ error: err.message }), { status: 401 });
   }
 };

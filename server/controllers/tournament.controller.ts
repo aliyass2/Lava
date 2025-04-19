@@ -9,6 +9,8 @@ import {
 } from '../services/tournament.service';
 import { CreateTournamentDto, UpdateTournamentDto } from '../dtos/tournament.dto';
 import { Readable } from 'stream';
+import { TournamentStatus } from '@prisma/client';
+
 import { v2 as cloudinary } from 'cloudinary';
 
 export async function handleGetAllTournaments() {
@@ -56,126 +58,206 @@ export async function handleGetTournamentById(id: string) {
  * Uploads a File (from form-data) directly to Cloudinary using a stream.
  */
 function uploadFileToCloudinary(file: File): Promise<any> {
-  return new Promise((resolve, reject) => {
-    // Initialize the Cloudinary upload stream.
-    const uploadStream = cloudinary.uploader.upload_stream(
-      { folder: 'tournaments' }, // Adjust folder if needed.
-      (error, result) => {
-        if (error) return reject(error);
-        resolve(result);
-      }
-    );
-
-    // Convert the Web API File stream into a Node.js Readable stream.
-    // Convert the Web API File stream into a Node.js Readable stream.
-    const nodeStream = Readable.fromWeb(file.stream() as any); // Ensure compatibility with Node.js streams
-    nodeStream.pipe(uploadStream).on('error', (err) => {
-      reject(err); // Handle stream errors
-    });
+  return new Promise(async (resolve, reject) => {
+    try {
+      // For debugging purposes
+      console.log("Starting Cloudinary upload, file size:", file.size);
+      
+      // Set a timeout to catch hanging uploads
+      const timeoutId = setTimeout(() => {
+        reject(new Error("Cloudinary upload timed out after 30 seconds"));
+      }, 30000);
+      
+      // Initialize the Cloudinary upload stream
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { 
+          folder: 'tournaments',
+          resource_type: 'auto' // Let Cloudinary determine the resource type
+        },
+        (error, result) => {
+          clearTimeout(timeoutId); // Clear the timeout
+          
+          if (error) {
+            console.error("Cloudinary upload error:", error);
+            return reject(error);
+          }
+          console.log("Cloudinary upload successful");
+          resolve(result);
+        }
+      );
+      
+      // Convert the Web API File to ArrayBuffer then to Buffer for more reliable handling
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      
+      // Use a simpler method to upload
+      uploadStream.end(buffer);
+      
+    } catch (err) {
+      console.error("Error in uploadFileToCloudinary:", err);
+      reject(err);
+    }
   });
 }
 export async function handleCreateTournament(req: Request) {
   try {
+    console.log("Starting tournament creation process");
     const formData = await req.formData();
-    const title = formData.get("title")?.toString() || "";
-    const description = formData.get("description")?.toString() || "";
-    const startDate = formData.get("startDate")?.toString() || "";
-    const endDate = formData.get("endDate")?.toString() || "";
-    const prize = formData.get("prize")?.toString() || "";
-
-    // Validate image field
-    const imageField = formData.get("image");
+    
+    // Basic validation
+    const title = formData.get('title')?.toString();
+    if (!title) {
+      return new Response(JSON.stringify({ error: 'Title is required' }), { status: 400 });
+    }
+    
+    // Extract other fields
+    const description = formData.get('description')?.toString() || '';
+    const status = formData.get('status')?.toString() as TournamentStatus;
+    const startDate = formData.get('startDate')?.toString() || '';
+    const endDate = formData.get('endDate')?.toString() || '';
+    const prize = formData.get('prize')?.toString() || '';
+    
+    // Process arrays and JSON
+    const rules = formData.getAll('rules').map(r => r.toString());
+    
+    // Safely parse JSON with error handling
+    let times, administrators, prizes;
+    try {
+      times = JSON.parse(formData.get('times')?.toString() || '{}');
+      administrators = JSON.parse(formData.get('administrators')?.toString() || '[]');
+      prizes = JSON.parse(formData.get('prizes')?.toString() || '[]');
+    } catch (jsonError) {
+      console.error("JSON parsing error:", jsonError);
+      return new Response(JSON.stringify({ error: 'Invalid JSON format in form data' }), { status: 400 });
+    }
+    
+    // Image handling with more validation
+    const imageField = formData.get('image');
+    console.log("Image field type:", imageField ? typeof imageField : 'missing');
+    
+    if (!imageField) {
+      return new Response(JSON.stringify({ error: 'Image is required' }), { status: 400 });
+    }
+    
     if (!(imageField instanceof File)) {
+      return new Response(JSON.stringify({ error: 'Image must be a valid file' }), { status: 400 });
+    }
+    
+    console.log(`Processing image: ${imageField.name}, size: ${imageField.size}, type: ${imageField.type}`);
+    
+    // Handle image upload with explicit error handling
+    let imageUrl;
+    try {
+      console.log("Starting image upload...");
+      const uploadResult = await uploadFileToCloudinary(imageField);
+      imageUrl = uploadResult.secure_url;
+      console.log("Image uploaded successfully:", imageUrl);
+    } catch (uploadError) {
+      console.error("Image upload failed:", uploadError);
       return new Response(
-        JSON.stringify({ error: 'Image must be a valid file' }),
-        { status: 400 }
+        JSON.stringify({ 
+          error: 'Failed to upload image', 
+          details: uploadError.message 
+        }), 
+        { status: 500 }
       );
     }
-
-    // Upload the file to Cloudinary
-    const uploadResult = await uploadFileToCloudinary(imageField);
-    const imageUrl = uploadResult.secure_url;
-
+    
+    // Create tournament data object
     const data: CreateTournamentDto = {
       title,
       description,
+      status,
       startDate,
       endDate,
+      rules,
+      times,
+      administrators,
       prize,
+      prizes,
       image: imageUrl,
     };
-
+    
+    console.log("Creating tournament with data:", JSON.stringify(data, null, 2));
+    
+    // Create the tournament
     const newTournament = await createTournament(data);
-    return new Response(JSON.stringify(newTournament), { status: 201 });
+    console.log("Tournament created successfully with ID:", newTournament.id);
+    
+    return new Response(JSON.stringify(newTournament), {
+      status: 201,
+      headers: { 'Content-Type': 'application/json' },
+    });
   } catch (error: any) {
-    console.error("Error creating tournament:", error);
+    console.error('Error creating tournament:', error);
     return new Response(
-      JSON.stringify({
-        error: error.message || 'Failed to create tournament',
-      }),
+      JSON.stringify({ 
+        error: 'Failed to create tournament', 
+        details: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      }), 
       { status: 500 }
     );
   }
-}
-
-async function uploadImageToCloudinary(base64Image: string): Promise<string> {
-  const dataUri = `data:image/jpeg;base64,${base64Image}`;
-  const uploadResult = await cloudinary.uploader.upload(dataUri, {
-    folder: 'tournaments', // adjust folder name as needed
-  });
-  return uploadResult.secure_url;
 }
 export async function handleUpdateTournament(req: Request, id: string) {
   try {
     const formData = await req.formData();
+    const title = formData.get('title')?.toString();
+    const description = formData.get('description')?.toString();
+    const status = formData.get('status')?.toString() as TournamentStatus;
+    const startDate = formData.get('startDate')?.toString();
+    const endDate = formData.get('endDate')?.toString();
+    const prize = formData.get('prize')?.toString();
 
-    // Get text fields from the form-data.
-    const title = formData.get("title")?.toString();
-    const description = formData.get("description")?.toString();
-    const startDate = formData.get("startDate")?.toString();
-    const endDate = formData.get("endDate")?.toString();
-    const prize = formData.get("prize")?.toString();
+    // Optional fields
+    let rules: string[] | undefined;
+    if (formData.has('rules')) rules = formData.getAll('rules').map(r => r.toString());
+    let times: any | undefined;
+    if (formData.get('times')) times = JSON.parse(formData.get('times')?.toString() || '{}');
+    let administrators: any | undefined;
+    if (formData.get('administrators')) administrators = JSON.parse(formData.get('administrators')?.toString() || '[]');
+    let prizes: any | undefined;
+    if (formData.get('prizes')) prizes = JSON.parse(formData.get('prizes')?.toString() || '[]');
 
-    let image: string | undefined = undefined;
-    const imageField = formData.get("image");
-    if (imageField) {
-      if (imageField instanceof File) {
-        // If a file is provided, stream it to Cloudinary.
-        const uploadResult = await uploadFileToCloudinary(imageField);
-        image = uploadResult.secure_url;
-      } else if (typeof imageField === 'string') {
-        // Otherwise, use the string directly (if needed).
-        image = imageField;
-      }
+    let image: string | undefined;
+    const imageField = formData.get('image');
+    if (imageField instanceof File) {
+      const uploadResult = await uploadFileToCloudinary(imageField);
+      image = uploadResult.secure_url;
+    } else if (typeof imageField === 'string') {
+      image = imageField;
     }
 
-    // Build the update data object.
     const updateData: UpdateTournamentDto = {};
-    if (title !== undefined && title !== "") updateData.title = title;
-    if (description !== undefined && description !== "") updateData.description = description;
-    if (startDate !== undefined && startDate !== "") updateData.startDate = startDate;
-    if (endDate !== undefined && endDate !== "") updateData.endDate = endDate;
-    if (prize !== undefined && prize !== "") updateData.prize = prize;
-    if (image !== undefined && image !== "") updateData.image = image;
+    if (title) updateData.title = title;
+    if (description) updateData.description = description;
+    if (status) updateData.status = status;
+    if (startDate) updateData.startDate = startDate;
+    if (endDate) updateData.endDate = endDate;
+    if (prize) updateData.prize = prize;
+    if (rules) updateData.rules = rules;
+    if (times) updateData.times = times;
+    if (administrators) updateData.administrators = administrators;
+    if (prizes) updateData.prizes = prizes;
+    if (image) updateData.image = image;
 
     const updatedTournament = await updateTournament(id, updateData);
-    return new Response(JSON.stringify(updatedTournament), { status: 200 });
+    return new Response(JSON.stringify(updatedTournament), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
   } catch (error: any) {
-    console.error("Error updating tournament:", error);
-    return new Response(
-      JSON.stringify({ error: error.message || 'Failed to update tournament' }),
-      { status: 500 }
-    );
+    console.error('Error updating tournament:', error);
+    return new Response(JSON.stringify({ error: error.message || 'Failed to update tournament' }), { status: 500 });
   }
 }
+
 export async function handleDeleteTournament(id: string) {
   try {
     await deleteTournament(id);
     return new Response(null, { status: 204 });
   } catch (error: any) {
-    return new Response(
-      JSON.stringify({ error: 'Failed to delete tournament' }),
-      { status: 500 }
-    );
+    return new Response(JSON.stringify({ error: 'Failed to delete tournament' }), { status: 500 });
   }
 }

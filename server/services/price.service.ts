@@ -5,78 +5,62 @@ import { CreatePriceDto, UpdatePriceDto } from '../dtos/price.dto';
 import { Prisma } from '@prisma/client';
 import { v2 as cloudinary } from 'cloudinary';
 
-// Ensure your Cloudinary configuration is loaded
+// load your Cloudinary config...
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
-  api_key: process.env.CLOUDINARY_API_KEY,
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export const getAllPrices = async () => {
-  return await prisma.price.findMany();
-};
+export const getAllPrices = () =>
+  prisma.price.findMany();
 
-export const getPriceById = async (id: string) => {
-  return await prisma.price.findUnique({
-    where: { id },
-  });
-};
+export const getPriceById = (id: string) =>
+  prisma.price.findUnique({ where: { id } });
 
-/**
- * Assumes that data.image is the Cloudinary URL.
- */
 export const createPrice = async (data: CreatePriceDto) => {
-  // Compute finalPrice if discountRate is provided and finalPrice is not sent.
-  let computedFinalPrice = data.finalPrice;
-  if (data.discountRate !== undefined && (data.finalPrice === undefined || data.finalPrice === null)) {
-    computedFinalPrice = data.price * ((100 - data.discountRate) / 100);
+  // compute finalPrice if needed
+  let computedFinal = data.finalPrice;
+  if (data.discountRate != null && computedFinal == null) {
+    computedFinal = data.price * ((100 - data.discountRate) / 100);
   }
-  
-  return await prisma.price.create({
+
+  return prisma.price.create({
     data: {
-      productName: data.productName,
-      time: data.time,
-      price: data.price,
+      productName:  data.productName,
+      mostused:     data.mostused,
+      features:     data.features,
+      time:         data.time,
+      price:        data.price,
       discountRate: data.discountRate,
-      finalPrice: computedFinalPrice,
-      image: data.image, // Store the Cloudinary URL directly
+      finalPrice:   computedFinal,
+      image:        data.image,
     },
   });
 };
 
 export const updatePrice = async (id: string, data: UpdatePriceDto) => {
-  let updateData: Prisma.PriceUpdateInput = {};
+  const updateData: Prisma.PriceUpdateInput = {};
 
-  if (data.productName !== undefined) {
-    updateData.productName = data.productName;
-  }
-  if (data.time !== undefined) {
-    updateData.time = data.time;
-  }
-  if (data.price !== undefined) {
-    updateData.price = data.price;
-  }
-  if (data.discountRate !== undefined) {
-    updateData.discountRate = data.discountRate;
-    if ((data.finalPrice === undefined || data.finalPrice === null) && data.price !== undefined) {
-      updateData.finalPrice = data.price * ((100 - data.discountRate) / 100);
-    }
-  }
-  if (data.finalPrice !== undefined) {
-    updateData.finalPrice = data.finalPrice;
-  }
-  if (data.image !== undefined) {
-    updateData.image = data.image; // New Cloudinary URL
+  if (data.productName    != null) updateData.productName  = data.productName;
+  if (data.mostused       != null) updateData.mostused     = data.mostused;
+  if (data.features       != null) updateData.features     = { set: data.features };
+  if (data.time           != null) updateData.time         = data.time;
+  if (data.price          != null) updateData.price        = data.price;
+  if (data.discountRate   != null) updateData.discountRate = data.discountRate;
+  if (data.finalPrice     != null) updateData.finalPrice   = data.finalPrice;
+  if (data.image          != null) updateData.image        = data.image;
+
+  // if they updated price+discountRate but no explicit finalPrice, recompute
+  if (data.discountRate != null && data.finalPrice == null && data.price != null) {
+    updateData.finalPrice = data.price * ((100 - data.discountRate) / 100);
   }
 
-  return await prisma.price.update({
+  return prisma.price.update({
     where: { id },
     data: updateData,
   });
 };
 
-export const deletePrice = async (id: string) => {
-  return await prisma.price.delete({
-    where: { id },
-  });
-};
+export const deletePrice = (id: string) =>
+  prisma.price.delete({ where: { id } });

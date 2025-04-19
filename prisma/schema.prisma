@@ -21,15 +21,20 @@ model Admin {
 }
 
 model Tournament {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  title       String
-  description String
-  startDate   DateTime
-  endDate     DateTime
-  prize       String
-  image       String   // Changed from Bytes to String for Cloudinary URL
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  title          String
+  description    String
+  status         TournamentStatus
+  startDate      DateTime
+  rules          String[]
+  times          Json
+  endDate        DateTime
+  administrators Json     // Fixed spelling here
+  prize          String
+  prizes         Json
+  image          String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model Game {
@@ -40,7 +45,13 @@ model Game {
   longDescription String
   videoUrl        String?    // URL for the trailer (embed)
   popular         Boolean
-  image           String     // Changed from Bytes to String
+  image           String     // URL from Cloudinary
+
+  // New fields for system specifications, features, and screenshots
+  systemSpecs     Json?      // Example: { "المعالج": "2 GHz", "الذاكرة": "4 GB RAM", ... }
+  features        String[]   // Example: ["أكثر من 140 بطلاً...", "أوضاع لعب متنوعة...", ...]
+  screenshots     String[]   // Array of Cloudinary URLs for game screenshots
+
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 }
@@ -71,6 +82,8 @@ model News {
 model Price {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   productName  String
+  mostused     Boolean
+  features     String[]
   time         Int
   price        Float
   discountRate Float?   // Discount percentage (e.g., 30 for 30%)
@@ -79,11 +92,23 @@ model Price {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
+model Vip {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String
+  price       Float
+  discount    Float?
+  finalPrice  Float?   // The discounted price (if applicable)
+  platform    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
 
-enum Platform {
-  PC
-  Xbox
-  PlayStation
-  Nintendo
-  Mobile
+
+enum TournamentStatus {
+  QADAMA     @map("قادمة")
+  MULGHA     @map("ملغاة")
+  MO2AJALA   @map("مؤجلة")
+  JARIYA     @map("جارية")
+  INTAHAT    @map("انتهت")
 }

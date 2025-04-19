@@ -1,17 +1,30 @@
+// server/dtos/tournament.dto.ts
+import { TournamentStatus } from '@prisma/client';
+
 export interface CreateTournamentDto {
   title: string;
   description: string;
-  startDate: string; // ISO string (e.g., "2025-06-01T10:00:00Z")
-  endDate: string;   // ISO string
+  status: TournamentStatus;
+  startDate: string;           // ISO string (e.g., "2025-06-01T10:00:00Z")
+  endDate: string;             // ISO string
+  rules: string[];             // Array of rules
+  times: any;                  // JSON object for times configuration
+  administrators: any;         // JSON object/list of administrator IDs
   prize: string;
-  image: string;     // Cloudinary URL
+  prizes: any;                 // JSON object/list for multiple prizes
+  image: string;               // Cloudinary URL
 }
 
 export interface UpdateTournamentDto {
   title?: string;
   description?: string;
-  startDate?: string; // Optional ISO date string
+  status?: TournamentStatus;
+  startDate?: string;
   endDate?: string;
+  rules?: string[];
+  times?: any;
+  administrators?: any;
   prize?: string;
-  image?: string;     // Optional Cloudinary URL for updating image
+  prizes?: any;
+  image?: string;
 }

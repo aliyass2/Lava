@@ -87,43 +87,59 @@ export async function handleCreateGame(req: Request) {
   try {
     const formData = await req.formData();
 
-    const title = formData.get("title")?.toString() || "";
-    const category = formData.get("category")?.toString() || "";
-    const description = formData.get("description")?.toString() || "";
+    // Basic fields
+    const title           = formData.get("title")?.toString() || "";
+    const category        = formData.get("category")?.toString() || "";
+    const description     = formData.get("description")?.toString() || "";
     const longDescription = formData.get("longDescription")?.toString() || "";
-    const videoUrl = formData.get("videoUrl")?.toString() || null;
-    const popular = formData.get("popular")?.toString() === "true";
+    const videoUrl        = formData.get("videoUrl")?.toString() || null;
+    const popular         = formData.get("popular")?.toString() === "true";
 
-    // Process primary image (as File).
-    let imageUrl = "";
+    // Primary image
     const imageField = formData.get("image");
-    if (!imageField || !(imageField instanceof File)) {
-      return new Response(JSON.stringify({ error: 'Primary image must be a valid file' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    if (!(imageField instanceof File)) {
+      return new Response(JSON.stringify({ error: 'Primary image is required' }), { status: 400 });
     }
-    const primaryUploadResult = await uploadFileToCloudinary(imageField);
-    imageUrl = primaryUploadResult.secure_url;
+    const primaryResult = await uploadFileToCloudinary(imageField);
+    const imageUrl = primaryResult.secure_url;
 
-    const data: CreateGameDto = {
+    // New: systemSpecs & features (expect JSON-encoded strings)
+    const systemSpecs: Record<string, string> = JSON.parse(
+      formData.get("systemSpecs")?.toString() || "{}"
+    );
+    const features: string[] = JSON.parse(
+      formData.get("features")?.toString() || "[]"
+    );
+
+    // New: screenshots (multiple files or URLs)
+    const screenshots: string[] = [];
+    for (const entry of formData.getAll("screenshots")) {
+      if (entry instanceof File) {
+        const r = await uploadFileToCloudinary(entry);
+        screenshots.push(r.secure_url);
+      } else {
+        screenshots.push(entry.toString());
+      }
+    }
+
+    const dto: CreateGameDto = {
       title,
       category,
       description,
       longDescription,
       videoUrl,
       popular,
-      image: imageUrl, // Cloudinary URL for the primary image.
+      image: imageUrl,
+      systemSpecs,
+      features,
+      screenshots,
     };
 
-    const newGame = await createGame(data);
-    return new Response(JSON.stringify(newGame), {
-      status: 201,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  } catch (error: any) {
-    console.error("Error in handleCreateGame:", error);
-    return new Response(JSON.stringify({ error: error.message || 'Failed to create game' }), { status: 500 });
+    const newGame = await createGame(dto);
+    return new Response(JSON.stringify(newGame), { status: 201 });
+  } catch (err: any) {
+    console.error(err);
+    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
   }
 }
 
@@ -135,40 +151,56 @@ export async function handleCreateGame(req: Request) {
 export async function handleUpdateGame(req: Request, id: string) {
   try {
     const formData = await req.formData();
-    const updateData: UpdateGameDto = {};
+    const updateDto: UpdateGameDto = {};
 
-    if (formData.has("title")) updateData.title = formData.get("title")?.toString();
-    if (formData.has("category")) updateData.category = formData.get("category")?.toString();
-    if (formData.has("description")) updateData.description = formData.get("description")?.toString();
-    if (formData.has("longDescription")) updateData.longDescription = formData.get("longDescription")?.toString();
-    if (formData.has("videoUrl")) updateData.videoUrl = formData.get("videoUrl")?.toString();
-    if (formData.has("popular")) updateData.popular = formData.get("popular")?.toString() === "true";
+    // Optional text fields
+    if (formData.has("title"))           updateDto.title = formData.get("title")?.toString();
+    if (formData.has("category"))        updateDto.category = formData.get("category")?.toString();
+    if (formData.has("description"))     updateDto.description = formData.get("description")?.toString();
+    if (formData.has("longDescription")) updateDto.longDescription = formData.get("longDescription")?.toString();
+    if (formData.has("videoUrl"))        updateDto.videoUrl = formData.get("videoUrl")?.toString();
+    if (formData.has("popular"))         updateDto.popular = formData.get("popular")?.toString() === "true";
 
-    // Process primary image update if provided.
+    // Primary image update
     if (formData.has("image")) {
-      const imageField = formData.get("image");
-      if (imageField instanceof File) {
-        const uploadResult = await uploadFileToCloudinary(imageField);
-        updateData.image = uploadResult.secure_url;
-      } else if (typeof imageField === "string") {
-        updateData.image = imageField;
+      const img = formData.get("image");
+      if (img instanceof File) {
+        const r = await uploadFileToCloudinary(img);
+        updateDto.image = r.secure_url;
+      } else {
+        updateDto.image = img.toString();
       }
     }
 
-    const updatedGame = await updateGame(id, updateData);
-    return new Response(JSON.stringify(updatedGame), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  } catch (error: any) {
-    console.error("Error in handleUpdateGame:", error);
-    return new Response(JSON.stringify({ error: error.message || 'Failed to update game' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    // New: systemSpecs & features
+    if (formData.has("systemSpecs")) {
+      updateDto.systemSpecs = JSON.parse(formData.get("systemSpecs")!.toString());
+    }
+    if (formData.has("features")) {
+      updateDto.features = JSON.parse(formData.get("features")!.toString());
+    }
+
+    // New: screenshots
+    if (formData.has("screenshots")) {
+      const arr: string[] = [];
+      for (const entry of formData.getAll("screenshots")) {
+        if (entry instanceof File) {
+          const r = await uploadFileToCloudinary(entry);
+          arr.push(r.secure_url);
+        } else {
+          arr.push(entry.toString());
+        }
+      }
+      updateDto.screenshots = arr;
+    }
+
+    const updated = await updateGame(id, updateDto);
+    return new Response(JSON.stringify(updated), { status: 200 });
+  } catch (err: any) {
+    console.error(err);
+    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
   }
 }
-
 /**
  * DELETE game handler.
  */
