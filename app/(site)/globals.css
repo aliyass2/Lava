@@ -1,5 +1,11 @@
 @import "tailwindcss";
-
+@font-face {
+  font-family:"cairo" ;
+  src: url("./../../fonts/static/Cairo-Medium.ttf");
+}
+*{
+  font-family: cairo;
+}
 :root {
   --background: #ffffff;
   --foreground: #171717;

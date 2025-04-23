@@ -83,11 +83,15 @@ export default function Contact() {
         </div>
         
         {/* Map (Placeholder) */}
-        <div className="max-w-4xl mx-auto mb-16 h-64 bg-gray-800 rounded-lg overflow-hidden relative">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-gray-500">خريطة الموقع هنا</p>
-          </div>
-        </div>
+       {/* Embedded Google Map */}
+       <div className="max-w-4xl mx-auto mb-16 h-64 rounded-lg overflow-hidden shadow-lg">
+  <iframe
+    src="https://www.google.com/maps?q=33.3974771,44.4033205&z=21&output=embed"
+    className="w-full h-full border-0"
+    allowFullScreen
+    loading="lazy"
+  />
+</div>
         
         {/* Social Media Cards */}
         <div className="max-w-4xl mx-auto">
