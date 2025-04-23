@@ -1,6 +1,7 @@
 // app/components/AvailableGames.jsx
-import Link from 'next/link';
-import InfiniteImageSlider from './../components/images-components/InfiniteImageSlider.jsx';
+import { headers } from 'next/headers'
+import Link from 'next/link'
+import InfiniteImageSlider from '../components/images-components/InfiniteImageSlider.jsx'
 
 export const metadata = {
   title: 'الألعاب المتوفرة | منصة الألعاب الخاصة بك',
@@ -9,12 +10,7 @@ export const metadata = {
     title: 'الألعاب المتوفرة | منصة الألعاب الخاصة بك',
     description: 'اكتشف الألعاب الرائجة مع مجتمعات نشطة من اللاعبين',
     images: [
-      {
-        url: '/images/og-games.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'مجموعة الألعاب المتوفرة',
-      },
+      { url: '/images/og-games.jpg', width: 1200, height: 630, alt: 'مجموعة الألعاب المتوفرة' },
     ],
   },
   twitter: {
@@ -25,55 +21,44 @@ export const metadata = {
   },
   alternates: {
     canonical: '/games',
-    languages: {
-      'en-US': '/en/games',
-      'ar-SA': '/ar/games',
-    },
+    languages: { 'en-US': '/en/games', 'ar-SA': '/ar/games' },
   },
-};
-
-// Simulated API call to fetch game data
-async function getGames() {
-  return [
-    {
-      id: 1,
-      title: "For Honor",
-      imageUrl: "/temp/forhonor.jpg",
-      slug: "for-honor"
-    },
-    {
-      id: 2,
-      title: "League of Legends",
-      imageUrl: "/temp/League.jpg",
-      slug: "league-of-legends"
-    },
-    {
-      id: 3,
-      title: "Call of Duty",
-      imageUrl: "/temp/CallofDutyBlackOps6.webp",
-      slug: "call-of-duty"
-    },
-    {
-      id: 4,
-      title: "Cyberpunk 2077",
-      imageUrl: "/temp/Cyberpunk.jpg",
-      slug: "cyberpunk-2077"
-    },
-    // Add more games as needed
-  ];
 }
 
+// always fetch fresh on every request
+export const dynamic = 'force-dynamic'
+
 export default async function AvailableGames() {
-  const games = await getGames();
+  // 1️⃣ Get host (e.g. "localhost:3000" or "my-app.vercel.app")
+  const host = headers().get('host')
+  if (!host) throw new Error('Unable to determine host for API call')
+
+  // 2️⃣ Build absolute URL
+  const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https'
+  const apiUrl   = `${protocol}://${host}/api/games`
+
+  // 3️⃣ Fetch the real games list
+  const res = await fetch(apiUrl, { cache: 'no-store' })
+  if (!res.ok) throw new Error(`Failed to fetch games, status: ${res.status}`)
+  const data = await res.json()
+
+  // 4️⃣ Map into slider’s expected props
+   const games = data.map(item => ({
+       id:          item.id,
+       title:       item.title,
+       // rename `url` → `imageUrl`
+       imageUrl:    item.imageUrl,
+       description: item.description,
+       link:        `/games/${item.id}`
+     }))
 
   return (
     <section 
       className="relative py-8 px-4 bg-black text-white" 
       aria-labelledby="available-games-heading"
-      dir='rtl'
+      dir="rtl"
     >
-      {/* Red linear gradient overlay from right to left */}
-      <div className="absolute inset-0 bg-gradient-to-l from-red-950 to-50% pointer-events-none"></div>
+      <div className="absolute inset-0 bg-gradient-to-l from-red-950 to-50% pointer-events-none" />
       <div className="relative container mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 
@@ -82,7 +67,7 @@ export default async function AvailableGames() {
             dir="rtl" 
             lang="ar"
           >
-            الالعاب المتوفرة
+            الألعاب المتوفرة
           </h2>
           <Link 
             href="/all-games" 
@@ -96,5 +81,5 @@ export default async function AvailableGames() {
         <InfiniteImageSlider items={games} />
       </div>
     </section>
-  );
+  )
 }

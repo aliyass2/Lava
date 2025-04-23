@@ -99,6 +99,7 @@ export default function Footer() {
                   <span className="text-gray-400">info@lavagamecenter.com</span>
                 </li>
               </ul>
+            </div>
               <div className="mt-4">
                 <h4 className="text-white text-md font-bold mb-2">ساعات العمل:</h4>
                 <p className="text-gray-400">
@@ -108,7 +109,6 @@ export default function Footer() {
                   الجمعة: من 2 ظهراً حتى 2 صباحاً
                 </p>
               </div>
-            </div>
 
          
           </div>

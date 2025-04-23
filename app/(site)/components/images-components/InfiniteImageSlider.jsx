@@ -1,6 +1,6 @@
 // app/components/InfiniteImageSlider.jsx
 'use client';
-
+import Link from 'next/link';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 export default function InfiniteImageSlider({ 
