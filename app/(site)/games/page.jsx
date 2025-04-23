@@ -5,6 +5,32 @@ import { headers } from 'next/headers';
 
 export const dynamic = 'force-dynamic'; // always server‑render
 
+export const metadata = {
+  title: 'الألعاب | Lava Gaming',
+  description: 'استكشف مجموعتنا الواسعة من أحدث ألعاب الفيديو في مركز لافا للألعاب في بغداد. ألعاب متنوعة لجميع الأذواق والمنصات.',
+  keywords: 'ألعاب فيديو، ألعاب كمبيوتر، PS5، Xbox، مركز ألعاب، لافا، بغداد، العاب شعبية، ألعاب قتال، ألعاب رياضية، ألعاب استراتيجية',
+  openGraph: {
+    title: 'الألعاب | Lava Gaming',
+    description: 'استكشف مجموعتنا الواسعة من أحدث ألعاب الفيديو في مركز لافا للألعاب',
+    locale: 'ar_IQ',
+    type: 'website',
+    images: [
+      {
+        url: '/images/games-banner.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'ألعاب متوفرة في مركز لافا',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'الألعاب | Lava Gaming',
+    description: 'استكشف مجموعتنا الواسعة من أحدث ألعاب الفيديو في مركز لافا للألعاب',
+    images: ['/images/games-banner.jpg'],
+  },
+};
+
 // Fetch games list from your API
 async function getGames() {
   const host = headers().get('host');

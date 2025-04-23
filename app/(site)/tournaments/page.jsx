@@ -4,6 +4,31 @@ import Link from 'next/link';
 import { headers } from 'next/headers';
 
 export const dynamic = 'force-dynamic'; // always fetch fresh
+export const metadata = {
+  title: 'البطولات | Lava Gaming',
+  description: 'تعرف على أحدث البطولات القادمة والجارية في مركز لافا للألعاب في بغداد. شارك في منافسات الألعاب الإلكترونية واربح جوائز قيمة.',
+  keywords: 'بطولات العاب, مسابقات, لافا للألعاب, العاب الكترونية, بطولات قادمة, بغداد, مسابقات الألعاب',
+  openGraph: {
+    title: 'البطولات | Lava Gaming',
+    description: 'تعرف على أحدث البطولات القادمة والجارية في مركز لافا للألعاب',
+    locale: 'ar_IQ',
+    type: 'website',
+    images: [
+      {
+        url: '/images/tournaments-banner.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'بطولات مركز لافا للألعاب',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'البطولات | Lava Gaming',
+    description: 'تعرف على أحدث البطولات القادمة والجارية في مركز لافا للألعاب',
+    images: ['/images/tournaments-banner.jpg'],
+  },
+};
 
 async function getTournaments() {
   const host = headers().get('host');

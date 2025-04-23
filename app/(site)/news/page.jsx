@@ -5,6 +5,32 @@ import { headers } from 'next/headers';
 
 export const dynamic = 'force-dynamic'; // always fetch fresh
 
+export const metadata = {
+  title: 'الأخبار | Lava Gaming',
+  description: 'تابع أحدث أخبار وفعاليات مركز لافا للألعاب في بغداد. اطلع على آخر التطورات، والمسابقات، والعروض الخاصة، ومعلومات الأحداث القادمة.',
+  keywords: 'أخبار الألعاب، أخبار لافا، مركز ألعاب، فعاليات، مسابقات، عروض خاصة، بغداد، أخبار، أحداث',
+  openGraph: {
+    title: 'الأخبار | Lava Gaming',
+    description: 'تابع أحدث أخبار وفعاليات مركز لافا للألعاب في بغداد',
+    locale: 'ar_IQ',
+    type: 'website',
+    images: [
+      {
+        url: '/images/news-banner.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'أخبار مركز لافا للألعاب',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'الأخبار | Lava Gaming',
+    description: 'تابع أحدث أخبار وفعاليات مركز لافا للألعاب في بغداد',
+    images: ['/images/news-banner.jpg'],
+  },
+};
+
 async function getNewsArticles() {
   const host = headers().get('host');
   if (!host) return [];
