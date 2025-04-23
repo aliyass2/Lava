@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 
 export default async function HeaderSection() {
   // grab host (e.g. "localhost:3000" or "my-app.vercel.app")
-  const host = headers().get('host')
+  const host = (await headers()).get('host')
   if (!host) {
     throw new Error('Unable to determine host for Gallery API call')
   }

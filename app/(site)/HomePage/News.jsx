@@ -65,7 +65,7 @@ const sampleRawNews = [
 
 // Fetch raw news from our internal API (no-store so we control caching), fallback if needed
 async function getGameCenterNews() {
-  const host = headers().get('host')
+  const host = (await headers()).get('host')
   if (!host) {
     console.warn('Unable to determine host; using sample data')
     return sampleRawNews

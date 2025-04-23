@@ -33,7 +33,7 @@ export const metadata = {
 
 // Fetch games list from your API
 async function getGames() {
-  const host = headers().get('host');
+  const host = (await headers()).get('host');
   if (!host) {
     console.warn('No host header, returning empty list');
     return [];

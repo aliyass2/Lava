@@ -7,7 +7,7 @@ import { notFound } from 'next/navigation';
 export const dynamic = 'force-dynamic'; // always server‑render
 
 async function fetchArticleBySlug(slug) {
-  const host = headers().get('host');
+  const host = (await headers()).get('host');
   if (!host) {
     console.error('Could not determine host for API request');
     return null;
@@ -25,7 +25,8 @@ async function fetchArticleBySlug(slug) {
   return all.find(item => item.slug === slug) ?? null;
 }
 
-export default async function NewsDetailPage({ params }) {
+export default async function NewsDetailPage(props) {
+  const params = await props.params;
   const { slug } = params;
   const article = await fetchArticleBySlug(slug);
 
