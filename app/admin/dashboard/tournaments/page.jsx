@@ -336,10 +336,18 @@ export default function TournamentsManagementPage() {
                     className="w-full px-4 py-2 bg-gray-800 rounded-lg"
                     required
                   >
-                    <option>جارية</option>
-                    <option>منتهية</option>
-                    <option>ملغاة</option>
+                    <option value="JARIYA">جارية</option>
+                    <option value="INTAHAT">منتهية</option>
+                    <option value="MULGHA">ملغاة</option>
+                    <option value="MO2AJALA">مؤجلة</option>
+                    <option value="QADAMA">قادمة</option>
+
+
+
                   </select>
+
+
+
                 </div>
                 {/* Dates */}
                 <div>

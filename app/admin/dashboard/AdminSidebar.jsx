@@ -81,10 +81,10 @@ export default function AdminSidebar() {
           {/* المستخدمين */}
           <li className="mb-2">
             <Link
-              href="/users"
+              href="/admin/dashboard/users"
               className={
                 `flex items-center px-4 py-3 text-sm rounded-lg transition-colors duration-200 ` +
-                (isActive("/users")
+                (isActive("/admin/dashboard/users")
                   ? "bg-gradient-to-r from-red-800 to-red-700 text-white shadow-md"
                   : "text-red-300 hover:bg-red-900 hover:text-white group")
               }
@@ -92,13 +92,13 @@ export default function AdminSidebar() {
               <FaUsers
                 className={
                   `text-xl ml-3 ` +
-                  (isActive("/users")
+                  (isActive("/admin/dashboard/users")
                     ? "text-red-300"
                     : "text-red-500 group-hover:text-red-300")
                 }
               />
               <span>المستخدمين</span>
-              {isActive("/users") && (
+              {isActive("//admin/dashboardusers") && (
                 <span className="mr-auto w-1.5 h-6 rounded-full bg-red-400"></span>
               )}
             </Link>
@@ -126,7 +126,7 @@ export default function AdminSidebar() {
                 }
               />
               <span>الالعاب</span>
-              {isActive("/games") && (
+              {isActive("/admin/dashboard/games") && (
                 <span className="mr-auto w-1.5 h-6 rounded-full bg-red-400"></span>
               )}
             </Link>

@@ -78,8 +78,8 @@ export default async function GamePage(props) {
           </div>
           {/* Game Info */}
           <div className="md:w-2/3">
-            <div className="flex items-center mb-4">
-              <span className="bg-red-600 text-white text-sm px-3 py-1 rounded-full mr-3">
+            <div className="flex items-center mb-4 ">
+              <span className="bg-red-600 text-white text-sm px-3 py-1 rounded-full mr-3 ml-3">
                 {game.category}
               </span>
               {game.popular && (
@@ -165,21 +165,26 @@ export default async function GamePage(props) {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-8">
+          <div className="space-y-8" dir='rtl'>
             {/* System Specs */}
             {game.systemSpecs && (
-              <div className="bg-gray-900 rounded-lg p-6">
-                <h2 className="text-2xl font-bold mb-4">متطلبات النظام</h2>
-                <ul className="space-y-4">
-                  {Object.entries(game.systemSpecs).map(([key, val]) => (
-                    <li key={key}>
-                      <span className="block text-red-500 font-medium mb-1">{key}:</span>
-                      <span className="text-gray-300">{val}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+  <div className="bg-gray-900 rounded-lg p-6">
+    <h2 className="text-2xl font-bold mb-4">متطلبات النظام</h2>
+
+    {/* key → value, separated by a thin divider */}
+    <dl className="divide-y divide-gray-800">
+      {Object.entries(game.systemSpecs).map(([key, val]) => (
+        <div key={key} className="flex justify-between py-2">
+          {/* key (label) */}
+          <dt className="text-red-500 font-medium break-all">{key}</dt>
+
+          {/* value */}
+          <dd className="text-gray-300 font-semibold break-all">{val}</dd>
+        </div>
+      ))}
+    </dl>
+  </div>
+)}
 
             {/* CTA Box */}
             <div className="bg-gray-900 rounded-lg p-6">

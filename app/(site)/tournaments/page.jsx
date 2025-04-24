@@ -45,8 +45,10 @@ async function getTournaments() {
 function getStatusBadgeClass(status) {
   switch (status) {
     case 'JARIYA':    return 'bg-green-600 text-white';
-    case 'QADIMA':    return 'bg-blue-600 text-white';
-    case 'MUNTAHYA':  return 'bg-gray-600 text-white';
+    case 'QADAMA':    return 'bg-blue-600 text-white';
+    case 'INTAHAT':  return 'bg-gray-600 text-white';
+    case "MULGHA" :return "bg-gray-600 text-white";
+    case "MO2AJALA" :return "bg-gray-600 text-white";
     default:          return 'bg-gray-600 text-white';
   }
 }
@@ -54,8 +56,11 @@ function getStatusBadgeClass(status) {
 function getStatusArabic(status) {
   switch (status) {
     case 'JARIYA':    return 'جارية';
-    case 'QADIMA':    return 'قادمة';
-    case 'MUNTAHYA':  return 'منتهية';
+    case 'QADAMA':    return 'قادمة';
+    case 'INTAHAT':  return 'منتهية';
+    case "MULGHA" :return "ملغاة";
+    case "MO2AJALA" :return "مؤجلة";
+
     default:          return '';
   }
 }

@@ -84,7 +84,9 @@ export default function GamesManagementPage() {
       setIsLoadingList(false);
     }
   };
-  useEffect(fetchGames, []);
+   useEffect(() => {
+       fetchGames();
+     }, []);
 
   // ─────────────────────────── Search Filter ──────────────────────────
   useEffect(() => {
@@ -152,7 +154,7 @@ export default function GamesManagementPage() {
       ));
 
       // System specs object
-      fd.append('gameSpecs', JSON.stringify(
+      fd.append('systemSpecs', JSON.stringify(
         systemSpecs.reduce((o, s) => {
           if (s.key && s.value) o[s.key] = s.value;
           return o;
@@ -242,7 +244,7 @@ export default function GamesManagementPage() {
       });
 
       setSystemSpecs(
-        Object.entries(data.systemSpecs || data.gameSpecs || {})
+        Object.entries(data.systemSpecs || data.systemSpecs || {})
               .map(([k, v]) => ({ key: k, value: v }))
       );
 
