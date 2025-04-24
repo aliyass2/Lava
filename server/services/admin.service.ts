@@ -1,15 +1,33 @@
 import bcrypt from "bcrypt";
 import { prisma } from "@/lib/prisma/client";
 import { signToken } from "@/lib/auth";                // 👈 central helper
-import { CreateAdminDto, UpdateAdminDto } from "../dtos/admin.dto";
+import { CreateAdminDto, UpdateAdminDto,AdminDto } from "../dtos/admin.dto";
 
 const SALT_ROUNDS = 10;
 
 /* ──────────────────────────────────────────── CRUD ── */
-export const getAllAdmins = () => prisma.admin.findMany();
+export const getAllAdmins = (): Promise<AdminDto[]> => {
+  return prisma.admin.findMany({
+    select: {
+      id: true,
+      username: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+};
 
-export const getAdminById = (id: string) =>
-  prisma.admin.findUnique({ where: { id } });
+export const getAdminById = (id: string): Promise<AdminDto | null> => {
+  return prisma.admin.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      username: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+};
 
 export const createAdmin = async (data: CreateAdminDto) => {
   const hashed = await bcrypt.hash(data.password, SALT_ROUNDS);
