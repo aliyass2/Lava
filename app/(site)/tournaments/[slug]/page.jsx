@@ -26,6 +26,8 @@ function getStatusInfo(status) {
     case 'JARIYA':   return { text: 'جارية',    class: 'bg-green-600' };
     case 'QADIMA':   return { text: 'قادمة',    class: 'bg-blue-600'  };
     case 'MUNTAHYA': return { text: 'منتهية',  class: 'bg-gray-600'  };
+    case 'MULGHA':   return { text: 'ملغاة',    class: 'bg-blue-600'  };
+    case 'MO2AJALA': return { text: 'مؤجلة',  class: 'bg-gray-600'  };
     default:         return { text: status,     class: 'bg-gray-600'  };
   }
 }
