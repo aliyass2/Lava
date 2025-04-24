@@ -6,6 +6,7 @@ import { verifyToken } from "@/lib/auth";
 
 const NEED_AUTH_METHODS = ["POST", "PUT", "DELETE"];
 const PUBLIC_APIS       = ["/api/admin/login"];
+const PROTECTED_GET_PATHS = ["/api/admin"];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
@@ -17,9 +18,14 @@ export async function middleware(req: NextRequest) {
   const isAdminLogin    = pathname === "/admin";        // public
   const isAdminPrivate  = pathname.startsWith("/admin/"); // protected
   const isDashboard     = pathname.startsWith("/dashboard");
+  // flag GET /api/admin as needing auth
+  const isGetAllAdmins = isApi
+                      && PROTECTED_GET_PATHS.includes(pathname)
+                      && method === "GET";
 
   /* ---------- 2. Does this request need auth? ---------- */
   const needsAuth =
+    isGetAllAdmins ||
     isAdminPrivate ||
     isDashboard    ||
     (isApi && !isPublicApi && NEED_AUTH_METHODS.includes(method));

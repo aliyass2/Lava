@@ -6,7 +6,6 @@ export interface CreateVipDto {
     discount?: number;
     platform: string;
   }
-  
   export interface UpdateVipDto {
     name?: string;
     description?: string;

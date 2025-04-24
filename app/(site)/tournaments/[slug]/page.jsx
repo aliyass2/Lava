@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'; // always server-render
 
 // Fetch a single tournament by ID
 async function fetchTournament(id) {
-  const host = headers().get('host');
+  const host = (await headers()).get('host');
   if (!host) return null;
   const proto = process.env.NODE_ENV === 'development' ? 'http' : 'https';
   const res = await fetch(
@@ -32,7 +32,8 @@ function getStatusInfo(status) {
   }
 }
 
-export default async function TournamentPage({ params }) {
+export default async function TournamentPage(props) {
+  const params = await props.params;
   const { slug } = params; // slug is the tournament ID
   const t = await fetchTournament(slug);
   if (!t) notFound();

@@ -30,7 +30,7 @@ export const dynamic = 'force-dynamic'
 
 export default async function AvailableGames() {
   // 1️⃣ Get host (e.g. "localhost:3000" or "my-app.vercel.app")
-  const host = headers().get('host')
+  const host = (await headers()).get('host')
   if (!host) throw new Error('Unable to determine host for API call')
 
   // 2️⃣ Build absolute URL

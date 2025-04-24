@@ -55,7 +55,7 @@ export const metadata = {
 
 // Fetch all pricing items
 async function fetchPrices() {
-  const host = headers().get('host');
+  const host = (await headers()).get('host');
   if (!host) return null;
   const proto = process.env.NODE_ENV === 'development' ? 'http' : 'https';
   const res = await fetch(
@@ -68,7 +68,7 @@ async function fetchPrices() {
 
 // Fetch all VIP packages
 async function fetchVips() {
-  const host = headers().get('host');
+  const host = (await headers()).get('host');
   if (!host) return null;
   const proto = process.env.NODE_ENV === 'development' ? 'http' : 'https';
   const res = await fetch(

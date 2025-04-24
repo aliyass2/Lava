@@ -31,7 +31,7 @@ export const metadata = {
 };
 
 async function getTournaments() {
-  const host = headers().get('host');
+  const host = (await headers()).get('host');
   if (!host) return [];
   const proto = process.env.NODE_ENV === 'development' ? 'http' : 'https';
   const res = await fetch(

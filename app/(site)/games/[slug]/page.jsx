@@ -24,7 +24,7 @@ function toEmbedUrl(url) {
 
 // Fetch a single game by ID (slug)
 async function getGameBySlug(slug) {
-  const host = headers().get('host');
+  const host = (await headers()).get('host');
   if (!host) return null;
   const proto = process.env.NODE_ENV === 'development' ? 'http' : 'https';
   const res = await fetch(
@@ -37,7 +37,7 @@ async function getGameBySlug(slug) {
 
 // Fetch all games and pick 3 others in the same category
 async function getRelatedGames(category, currentId) {
-  const host = headers().get('host');
+  const host = (await headers()).get('host');
   if (!host) return [];
   const proto = process.env.NODE_ENV === 'development' ? 'http' : 'https';
   const res = await fetch(
@@ -51,7 +51,8 @@ async function getRelatedGames(category, currentId) {
     .slice(0, 3);
 }
 
-export default async function GamePage({ params }) {
+export default async function GamePage(props) {
+  const params = await props.params;
   const { slug } = params;
   const game = await getGameBySlug(slug);
   if (!game) notFound();
