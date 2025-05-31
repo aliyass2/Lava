@@ -111,12 +111,12 @@ export default function Contact() {
     {
       icon: <MapIcon />,
       title: "العنوان",
-      content: "شارع الجمهورية، مركز التسوق الكبير، الطابق الثالث، بغداد، العراق"
+      content: "البنوك-شارع الفتلاوي-بناية قشطوطة-الطابق الثالث"
     },
     {
       icon: <PhoneIcon />,
       title: "رقم الهاتف",
-      content: "+964 771 234 5678"
+      content: "+964 773 407 7356"
     },
     {
       icon: <ClockIcon />,
@@ -129,27 +129,27 @@ export default function Contact() {
   const socialMedia = [
     {
       name: "Facebook",
-      username: "@LavaGamingIQ",
+      username: "LAVA Gaming center",
       description: "تابعنا على فيسبوك للبقاء على اطلاع بأحدث البطولات والعروض الخاصة.",
       icon: <FacebookIcon />,
       color: "bg-blue-600",
-      link: "https://facebook.com/LavaGamingIQ"
+      link: "https://www.facebook.com/profile.php?id=61573865646740 "
     },
     {
       name: "Instagram",
-      username: "@LavaGaming",
+      username: "lava.gc",
       description: "شاهد صور وفيديوهات من أحدث الفعاليات والبطولات في مركزنا.",
       icon: <InstagramIcon />,
       color: "bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400",
-      link: "https://instagram.com/LavaGaming"
+      link: "https://www.instagram.com/lava.gc/"
     },
     {
       name: "TikTok",
-      username: "@LavaGamingIQ",
+      username: "lava.gc",
       description: "شاهد أفضل اللحظات ومقاطع من بطولاتنا ومسابقاتنا.",
       icon: <TikTokIcon />,
       color: "bg-gradient-to-br from-black via-gray-900 to-gray-800 hover:from-rose-500 hover:via-fuchsia-500 hover:to-cyan-500",
-      link: "https://tiktok.com/@LavaGamingIQ"
+      link: "https://www.tiktok.com/@lava.gc"
     }
   ];
 
@@ -175,13 +175,13 @@ export default function Contact() {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {contactInfo.map((info, index) => (
-                <div key={index} className="bg-gray-800 p-6 rounded-xl text-center">
+                <div key={index} className="bg-gray-800 p-6 rounded-xl text-center" dir='ltr'>
                   <div className="flex justify-center mb-4">
                     <div className="h-14 w-14 rounded-full bg-red-600 flex items-center justify-center">
                       {info.icon}
                     </div>
                   </div>
-                  <h3 className="text-xl font-bold mb-2">{info.title}</h3>
+                  <h3 className="text-xl font-bold mb-2" >{info.title}</h3>
                   <p className="text-gray-400">
                     {info.title === "رقم الهاتف" ? (
                       <a href={`tel:${info.content.replace(/\s+/g, '')}`} className="hover:text-red-400 transition-colors">
